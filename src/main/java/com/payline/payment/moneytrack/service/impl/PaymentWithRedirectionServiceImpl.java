@@ -48,7 +48,9 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
         try {
             Transaction transaction = client.getTransaction(configuration, partnerTransactionId);
 
-            if (Transaction.Status.PAID.equalsIgnoreCase(transaction.getStatus())) {
+            if (Transaction.Status.PROCESSING_REPAYMENT.equalsIgnoreCase(transaction.getStatus())) {
+                return transaction.toPaymentResponseOnHold();
+            } else if(Transaction.Status.PAID.equalsIgnoreCase(transaction.getStatus())){
                 return transaction.toPaymentResponseSuccess();
             } else {
                 return transaction.toPaymentResponseFailure();

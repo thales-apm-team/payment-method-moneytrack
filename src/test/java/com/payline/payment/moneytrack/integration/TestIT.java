@@ -5,11 +5,18 @@ import com.payline.payment.moneytrack.MockUtils;
 import com.payline.payment.moneytrack.service.impl.ConfigurationServiceImpl;
 import com.payline.payment.moneytrack.service.impl.PaymentServiceImpl;
 import com.payline.payment.moneytrack.service.impl.PaymentWithRedirectionServiceImpl;
+import com.payline.pmapi.bean.payment.ContractConfiguration;
 import com.payline.pmapi.bean.payment.ContractProperty;
+import com.payline.pmapi.bean.payment.Environment;
 import com.payline.pmapi.bean.payment.PaymentFormContext;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
+import com.payline.pmapi.bean.payment.request.RedirectionPaymentRequest;
+import com.payline.pmapi.bean.payment.response.PaymentResponse;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseRedirect;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
 import com.payline.pmapi.integration.AbstractPaymentIntegration;
 import com.payline.pmapi.service.ConfigurationService;
+import org.apache.bcel.generic.MULTIANEWARRAY;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
@@ -57,19 +64,19 @@ public class TestIT extends AbstractPaymentIntegration {
 
             clickOn(driver, "#new_beneficiary input[name=\"commit\"]");
 
-            // todo decrir qu'ici il faut rentrer un code recu par telephone cliquer sur ok et attendre
+            /*
+            here we have to manually enter the 3DSecure code on the payment page
+             */
 
             WebDriverWait wait = new WebDriverWait(driver, 30);
 
 
             // Wait for redirection to success or cancel url
-            wait.until(ExpectedConditions.or(ExpectedConditions.urlToBe(SUCCESS_URL), ExpectedConditions.urlToBe(CANCEL_URL)));
+            wait.until(ExpectedConditions.or(ExpectedConditions.urlToBe("https://example.org/store/redirection")));
             return driver.getCurrentUrl();
         } finally {
             driver.quit();
         }
-
-
     }
 
     private WebElement goTo(WebDriver driver, String cssSelector) {
@@ -100,7 +107,30 @@ public class TestIT extends AbstractPaymentIntegration {
         Assertions.assertEquals(0, errors.size());
 
         PaymentRequest request = createDefaultPaymentRequest();
-        this.fullRedirectionPayment(request, paymentService, paymentWithRedirectionService);
+
+        PaymentResponse paymentResponseFromPaymentRequest = paymentService.paymentRequest(request);
+        Assertions.assertEquals(PaymentResponseRedirect.class, paymentResponseFromPaymentRequest.getClass());
+        PaymentResponseRedirect paymentResponseRedirect = (PaymentResponseRedirect)paymentResponseFromPaymentRequest;
+        String partnerTransactionId = paymentResponseRedirect.getPartnerTransactionId();
+
+        String partnerUrl = paymentResponseRedirect.getRedirectionRequest().getUrl().toString();
+        String redirectionUrl = this.payOnPartnerWebsite(partnerUrl);
+        Assertions.assertEquals("https://succesurl.com/", redirectionUrl);
+
+        RedirectionPaymentRequest redirectionPaymentRequest = RedirectionPaymentRequest.builder()
+                .withContractConfiguration(MockUtils.aContractConfiguration())
+                .withPaymentFormContext(this.generatePaymentFormContext())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withTransactionId(request.getTransactionId())
+                .withRequestContext(paymentResponseRedirect.getRequestContext())
+                .withAmount(request.getAmount())
+                .build();
+
+        PaymentResponse paymentResponseFromFinalize = paymentWithRedirectionService.finalizeRedirectionPayment(redirectionPaymentRequest);
+        Assertions.assertEquals(PaymentResponseSuccess.class, paymentResponseFromFinalize.getClass());
+        PaymentResponseSuccess paymentResponseSuccess = (PaymentResponseSuccess)paymentResponseFromFinalize;
+        Assertions.assertNotNull(paymentResponseSuccess.getTransactionDetails());
+        Assertions.assertEquals(partnerTransactionId, paymentResponseSuccess.getPartnerTransactionId());
 
     }
 

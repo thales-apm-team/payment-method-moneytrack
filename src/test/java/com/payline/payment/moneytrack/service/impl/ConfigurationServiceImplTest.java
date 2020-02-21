@@ -2,10 +2,13 @@ package com.payline.payment.moneytrack.service.impl;
 
 import com.payline.payment.moneytrack.MockUtils;
 import com.payline.payment.moneytrack.exception.PluginException;
+import com.payline.payment.moneytrack.utils.Constants;
 import com.payline.payment.moneytrack.utils.http.HttpClient;
 import com.payline.payment.moneytrack.utils.properties.ReleaseProperties;
 import com.payline.pmapi.bean.configuration.ReleaseInformation;
 import com.payline.pmapi.bean.configuration.parameter.AbstractParameter;
+import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
+import org.apache.bcel.classfile.Constant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +43,7 @@ class ConfigurationServiceImplTest {
     @Test
     void getParameters() {
         List<AbstractParameter> parameters = service.getParameters(new Locale("FR"));
-        Assertions.assertEquals(1, parameters.size());
+        Assertions.assertEquals(2, parameters.size());
     }
 
     @Test
@@ -48,6 +51,38 @@ class ConfigurationServiceImplTest {
         Mockito.doNothing().when(client).checkConnection(any(), any());
         Map errors = service.check(MockUtils.aContractParametersCheckRequest());
         Assertions.assertEquals(0, errors.size());
+    }
+
+    @Test
+    void checkEmptyToken() {
+        Mockito.doNothing().when(client).checkConnection(any(), any());
+
+        Map<String,String> accountInfo = new HashMap<>();
+        accountInfo.put(Constants.ContractConfigurationKeys.MERCHANT_API_STORE, "foo");
+
+        ContractParametersCheckRequest request = MockUtils.aContractParametersCheckRequestBuilder()
+                .withAccountInfo(accountInfo)
+                .build();
+
+        Map errors = service.check(request);
+        Assertions.assertEquals(1, errors.size());
+        Assertions.assertNotNull(errors.get(Constants.ContractConfigurationKeys.MERCHANT_API_TOKEN));
+    }
+
+    @Test
+    void checkEmptyStore() {
+        Mockito.doNothing().when(client).checkConnection(any(), any());
+
+        Map<String,String> accountInfo = new HashMap<>();
+        accountInfo.put(Constants.ContractConfigurationKeys.MERCHANT_API_TOKEN, "foo");
+
+        ContractParametersCheckRequest request = MockUtils.aContractParametersCheckRequestBuilder()
+                .withAccountInfo(accountInfo)
+                .build();
+
+        Map errors = service.check(request);
+        Assertions.assertEquals(1, errors.size());
+        Assertions.assertNotNull(errors.get(Constants.ContractConfigurationKeys.MERCHANT_API_STORE));
     }
 
     @Test

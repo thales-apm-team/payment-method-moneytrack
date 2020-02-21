@@ -3,6 +3,7 @@ package com.payline.payment.moneytrack.utils;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.payline.payment.moneytrack.exception.InvalidDataException;
 import com.payline.pmapi.bean.common.Amount;
 
 import java.io.BufferedReader;
@@ -74,8 +75,6 @@ public class PluginUtils {
     }
 
 
-// todo peut etre verifier les NPE et lever ine invalid avec "mauvais message recu" en message
-
     /**
      * Get first error of an errorMessage sent by MoneyTrack
      *
@@ -83,11 +82,15 @@ public class PluginUtils {
      * @return a simple message formatted as [firstErrorField]: [firstErrorMessage]
      */
     public static String getErrorMessage(String json) {
-        JsonObject obj = parser.parse(json).getAsJsonObject().get("errors").getAsJsonObject();
-        String k = obj.keySet().iterator().next();
-        String v = obj.get(k).getAsJsonArray().get(0).getAsString();
+        try {
+            JsonObject obj = parser.parse(json).getAsJsonObject().get("errors").getAsJsonObject();
+            String k = obj.keySet().iterator().next();
+            String v = obj.get(k).getAsJsonArray().get(0).getAsString();
 
-        return k + ": " + v;
+            return k + ": " + v;
+        }catch (NullPointerException e){
+            throw new InvalidDataException("unable to read the error message");
+        }
     }
 
 }

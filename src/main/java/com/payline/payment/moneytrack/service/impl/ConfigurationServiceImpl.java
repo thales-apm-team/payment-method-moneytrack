@@ -38,6 +38,14 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         token.setRequired(true);
         parameters.add(token);
 
+        AbstractParameter store = new InputParameter();
+        store.setKey(Constants.ContractConfigurationKeys.MERCHANT_API_STORE);
+        store.setLabel(i18n.getMessage("store.label", locale));
+        store.setDescription(i18n.getMessage("store.description", locale));
+        store.setValue("Online");
+        store.setRequired(true);
+        parameters.add(store);
+
         return parameters;
     }
 
@@ -52,8 +60,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         );
         try {
             String token = request.getAccountInfo().get(Constants.ContractConfigurationKeys.MERCHANT_API_TOKEN);
+            String store = request.getAccountInfo().get(Constants.ContractConfigurationKeys.MERCHANT_API_STORE);
             if (PluginUtils.isEmpty(token)) {
-                errors.put(Constants.ContractConfigurationKeys.MERCHANT_API_TOKEN, i18n.getMessage("-", locale));
+                errors.put(Constants.ContractConfigurationKeys.MERCHANT_API_TOKEN, i18n.getMessage("token.empty", locale));
+            } else if(PluginUtils.isEmpty(store)){
+                errors.put(Constants.ContractConfigurationKeys.MERCHANT_API_STORE, i18n.getMessage("store.empty", locale));
             } else {
                 client.checkConnection(configuration, token);
             }

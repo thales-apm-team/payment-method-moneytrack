@@ -10,6 +10,7 @@ public class Constants {
      */
     public static class ContractConfigurationKeys {
         public static final String MERCHANT_API_TOKEN = "apiToken";
+        public static final String MERCHANT_API_STORE = "store";
 
         /* Static utility class : no need to instantiate it (Sonar bug fix) */
         private ContractConfigurationKeys() {

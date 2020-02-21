@@ -322,6 +322,7 @@ public class MockUtils {
     public static ContractConfiguration aContractConfiguration() {
         Map<String, ContractProperty> contractProperties = new HashMap<>();
         contractProperties.put(Constants.ContractConfigurationKeys.MERCHANT_API_TOKEN, new ContractProperty("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjMyNTAzNTkwMDAwLCJzdWIiOiIzMjVhYTFmNi01OGQzLTQ3NTMtYmE0Ni04NGJhYTdjMzMwYzIiLCJhdWQiOm51bGwsInNjcCI6Im1lcmNoYW50IiwiaWF0IjoxNTgwMTQyNTk4LCJqdGkiOiI4MDYxZmExOS0zYTY5LTQxZGUtOGI4Ni1kZjkyZmRlODUyMDYifQ.9lMnmAro-aHo1DeKuWYWRhVXZf68E8_zuRjEE5RETSI"));
+        contractProperties.put(Constants.ContractConfigurationKeys.MERCHANT_API_STORE, new ContractProperty("foo"));
 
         return new ContractConfiguration("MoneyTrack", contractProperties);
     }

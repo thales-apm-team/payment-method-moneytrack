@@ -4,6 +4,7 @@ import com.payline.payment.moneytrack.bean.MoneyTrackPaymentRequest;
 import com.payline.payment.moneytrack.bean.Transaction;
 import com.payline.payment.moneytrack.bean.configuration.RequestConfiguration;
 import com.payline.payment.moneytrack.exception.PluginException;
+import com.payline.payment.moneytrack.utils.Constants;
 import com.payline.payment.moneytrack.utils.PluginUtils;
 import com.payline.payment.moneytrack.utils.http.HttpClient;
 import com.payline.pmapi.bean.common.FailureCause;
@@ -34,7 +35,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .withCurrencyAmount(PluginUtils.createStringAmount(request.getAmount()))
                     .withCallbackURL(request.getEnvironment().getNotificationURL())
                     .withReturnURL(request.getEnvironment().getRedirectionReturnURL())
-                    .withOrderInfo(request.getMerchantName())   // todo voir doc & question 11
+                    .withOrderInfo(request.getContractConfiguration().getProperty(Constants.ContractConfigurationKeys.MERCHANT_API_STORE).getValue())
                     .build();
 
             Transaction transaction = client.createTransaction(configuration, moneyTrackPaymentRequest);

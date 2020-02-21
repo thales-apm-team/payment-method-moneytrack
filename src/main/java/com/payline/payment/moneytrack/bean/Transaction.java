@@ -3,10 +3,12 @@ package com.payline.payment.moneytrack.bean;
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.moneytrack.utils.Constants;
 import com.payline.pmapi.bean.common.FailureCause;
+import com.payline.pmapi.bean.common.OnHoldCause;
 import com.payline.pmapi.bean.payment.RequestContext;
 import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.BuyerPaymentId;
 import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.impl.Email;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFailure;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseOnHold;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseRedirect;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
 
@@ -158,6 +160,15 @@ public class Transaction {
                 .withPartnerTransactionId(this.getId())
                 .withFailureCause(cause)
                 .withErrorCode(this.getStatus())
+                .build();
+    }
+
+    public PaymentResponseOnHold toPaymentResponseOnHold(){
+        return PaymentResponseOnHold.PaymentResponseOnHoldBuilder
+                .aPaymentResponseOnHold()
+                .withPartnerTransactionId(this.getId())
+                .withStatusCode(this.getStatus())
+                .withOnHoldCause(OnHoldCause.ASYNC_RETRY)
                 .build();
     }
 
